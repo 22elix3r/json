@@ -3885,6 +3885,22 @@ TEST_CASE("BJData use_type requires use_size")
     }
 }
 
+TEST_CASE("issue #5399 non-array _ArraySize_ falls back to object")
+{
+    json j_null;
+    j_null["_ArrayType_"] = "uint8";
+    j_null["_ArraySize_"] = nullptr;
+    j_null["_ArrayData_"] = json::array();
+    const auto out_null = json::to_bjdata(j_null);
+    CHECK(out_null.at(0) == '{');
+    CHECK(json::from_bjdata(out_null) == j_null);
+
+    json const j_obj = {{"_ArrayType_", "uint8"}, {"_ArraySize_", {{"a", 1}, {"b", 2}}}, {"_ArrayData_", {1, 2}}};
+    const auto out_obj = json::to_bjdata(j_obj);
+    CHECK(out_obj.at(0) == '{');
+    CHECK(json::from_bjdata(out_obj) == j_obj);
+}
+
 TEST_CASE("BJData roundtrips" * doctest::skip())
 {
     SECTION("input from self-generated BJData files")

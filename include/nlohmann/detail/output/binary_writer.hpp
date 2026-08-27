@@ -1668,6 +1668,13 @@ class binary_writer
         CharType dtype = it->second;
 
         key = "_ArraySize_";
+        // ndarray size must be a vector of dimensions; null or an object would
+        // otherwise be written as a BJData size marker that from_bjdata cannot
+        // parse (Z / {), violating the to_bjdata/from_bjdata round-trip
+        if (!value.at(key).is_array())
+        {
+            return true;
+        }
         std::size_t len = (value.at(key).empty() ? 0 : 1);
         for (const auto& el : value.at(key))
         {
